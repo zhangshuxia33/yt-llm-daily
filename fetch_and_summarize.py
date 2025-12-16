@@ -121,14 +121,17 @@ def main():
             continue
 
         s = summarize_to_json(d["title"], d["description"])
-        if float(s.get("score", 0)) < 0.55:
-            continue
-
-        d["summary"] = s.get("summary", "")
-        d["bullets"] = s.get("bullets", [])
-        d["score"] = float(s.get("score", 0))
-        d["created_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
-        new_items.append(d)
+        if SKIP_SUMMARY:
+            d["summary"] = ""
+            d["bullets"] = []
+            d["score"] = 0.8  # 先给个默认值，保证能入库
+        else:
+            s = summarize_to_json(d["title"], d["description"])
+            if float(s.get("score", 0)) < 0.55:
+                continue
+            d["summary"] = s.get("summary", "")
+            d["bullets"] = s.get("bullets", [])
+            d["score"] = float(s.get("score", 0))
 
     merged = new_items + existing
     merged.sort(key=lambda x: x["published_at"], reverse=True)
