@@ -77,11 +77,18 @@ score含义：与大模型/LLM相关性(0-1)
 标题：{title}
 简介：{description[:2000]}
 """
-    r = client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt
+
+    resp = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=[
+            {"role": "system", "content": "你只输出严格JSON，不要输出任何额外文字。"},
+            {"role": "user", "content": prompt},
+        ],
+        temperature=0.2,
     )
-    return json.loads(r.output_text)
+
+    text = resp.choices[0].message.content.strip()
+    return json.loads(text)
 
 def load_existing(path):
     if not os.path.exists(path):
