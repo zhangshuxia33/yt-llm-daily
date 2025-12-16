@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LLM 视频播客日报</title>
+  <style>
+    body{font-family:system-ui,-apple-system;max-width:900px;margin:24px auto;padding:0 16px;line-height:1.6}
+    .item{padding:14px 0;border-bottom:1px solid #eee}
+    .meta{color:#666;font-size:13px}
+    ul{margin:8px 0 0 18px}
+  </style>
+</head>
+<body>
+  <h1>LLM 视频播客日报</h1>
+  <div id="list">加载中…</div>
+
+<script>
+async function main(){
+  const res = await fetch("./data/items.json", {cache:"no-store"});
+  const items = await res.json();
+  const el = document.getElementById("list");
+  if (!items.length) { el.innerHTML = "今天还没抓到内容（或还没跑定时任务）。"; return; }
+  el.innerHTML = items.map(x => `
+    <div class="item">
+      <div><a href="${x.url}" target="_blank" rel="noreferrer">${escapeHtml(x.title)}</a></div>
+      <div class="meta">${escapeHtml(x.channel_title)} · ${new Date(x.published_at).toLocaleString()} · ${Math.round(x.duration_seconds/60)}min · score=${(x.score||0).toFixed(2)}</div>
+      <div>${escapeHtml(x.summary || "")}</div>
+      ${x.bullets?.length ? `<ul>${x.bullets.map(b=>`<li>${escapeHtml(b)}</li>`).join("")}</ul>` : ""}
+    </div>
+  `).join("");
+}
+function escapeHtml(s){
+  return (s||"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+main();
+</script>
+</body>
+</html>
