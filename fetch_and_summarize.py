@@ -4,6 +4,7 @@ import isodate
 from openai import OpenAI
 
 SKIP_SUMMARY = True
+LOOKBACK_DAYS = 3
 YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
@@ -12,14 +13,18 @@ KEYWORDS = [
   "大模型 播客", "GPT podcast", "RAG podcast", "AI agents podcast"
 ]
 
-MIN_DURATION_SECONDS = 10 * 60
-MAX_PER_KEYWORD = 8
+MIN_DURATION_SECONDS = 5 * 60
+MAX_PER_KEYWORD = 20
 
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 def iso_day_range_utc(day: datetime.date):
     start = datetime.datetime(day.year, day.month, day.day, tzinfo=datetime.timezone.utc)
     end = start + datetime.timedelta(days=1)
+    return start.isoformat().replace("+00:00", "Z"), end.isoformat().replace("+00:00", "Z")
+def iso_range_last_days_utc(days: int):
+    end = datetime.datetime.now(datetime.timezone.utc)
+    start = end - datetime.timedelta(days=days)
     return start.isoformat().replace("+00:00", "Z"), end.isoformat().replace("+00:00", "Z")
 
 def yt():
@@ -82,9 +87,7 @@ def save(path, items):
 
 def main():
     service = yt()
-    day = datetime.datetime.now(datetime.timezone.utc).date()
-    published_after, published_before = iso_day_range_utc(day)
-
+    published_after, published_before = iso_range_last_days_utc(LOOKBACK_DAYS)
     existing = load_existing("data/items.json")
     existing_ids = set(x["video_id"] for x in existing)
 
