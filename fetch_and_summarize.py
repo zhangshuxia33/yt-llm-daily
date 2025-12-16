@@ -3,6 +3,7 @@ from googleapiclient.discovery import build
 import isodate
 from openai import OpenAI
 
+SKIP_SUMMARY = True
 YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
