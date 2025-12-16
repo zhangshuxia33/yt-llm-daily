@@ -3,7 +3,6 @@ from googleapiclient.discovery import build
 import isodate
 from openai import OpenAI
 
-SKIP_SUMMARY = True
 YOUTUBE_API_KEY = os.environ["YOUTUBE_API_KEY"]
 OPENAI_API_KEY = os.environ["OPENAI_API_KEY"]
 
@@ -66,30 +65,8 @@ def get_video_details(service, video_ids):
     return out
 
 def summarize_to_json(title, description):
-    prompt = f"""
-你是技术播客速读编辑。请输出严格 JSON：
-{{
-  "summary": "不超过120字中文摘要",
-  "bullets": ["3-5条要点，每条<=20字"],
-  "score": 0.0
-}}
-score含义：与大模型/LLM相关性(0-1)
-
-标题：{title}
-简介：{description[:2000]}
-"""
-
-    resp = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "你只输出严格JSON，不要输出任何额外文字。"},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.2,
-    )
-
-    text = resp.choices[0].message.content.strip()
-    return json.loads(text)
+    # 临时禁用 OpenAI 摘要，避免 quota 导致 workflow 失败
+    return {"summary": "", "bullets": [], "score": 1.0}
 
 def load_existing(path):
     if not os.path.exists(path):
